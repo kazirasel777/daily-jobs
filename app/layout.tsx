@@ -42,7 +42,7 @@ export default function RootLayout({
         </main>
         
         {/* ✅ আপনার Google Analytics ID এখানে বসান */}
-        <GoogleAnalytics gaId="G-XXXXXXXXXX" />
+        <GoogleAnalytics gaId="G-1PR46X7764" />
         
       </body>
     </html>
