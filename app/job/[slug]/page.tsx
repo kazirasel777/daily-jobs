@@ -1,6 +1,38 @@
 // File: app/job/[slug]/page.tsx
 import Link from 'next/link';
 
+// ✅ ডায়নামিক SEO মেটা ট্যাগ জেনারেট করার ফাংশন (ফেসবুক/হোয়াটসঅ্যাপে শেয়ারের জন্য)
+export async function generateMetadata({ params }: any) {
+  const { slug } = await params;
+  
+  try {
+    const res = await fetch(`https://admin.jobsboxbd.com/api/v1/jobs/slug/${slug}`, { next: { revalidate: 3600 } });
+    const responseData = await res.json();
+    const job = responseData.data?.data || responseData.data;
+
+    if (!job) return { title: 'চাকরি পাওয়া যায়নি | দৈনিক চাকরি' };
+
+    // ডেসক্রিপশন থেকে HTML ট্যাগগুলো মুছে শুধু টেক্সট বের করা
+    const plainTextDescription = (job.description || job.details || job.body || '')
+      .replace(/<[^>]+>/g, '')
+      .substring(0, 160) + '...';
+
+    return {
+      title: `${job.title} | দৈনিক চাকরি`,
+      description: plainTextDescription,
+      openGraph: {
+        title: job.title,
+        description: plainTextDescription,
+        images: job.headline_image_url ? [job.headline_image_url] : [],
+        type: 'article',
+      },
+    };
+  } catch (error) {
+    return { title: 'বিস্তারিত | দৈনিক চাকরি' };
+  }
+}
+
+// ✅ মূল পেজের কম্পোনেন্ট
 export default async function JobDetails({ params }: any) {
   const { slug } = await params;
 
@@ -13,31 +45,25 @@ export default async function JobDetails({ params }: any) {
 
     if (res.ok) {
       const responseData = await res.json();
-      // Laravel Resource মাঝে মাঝে ডেটাকে ডাবল 'data' অবজেক্টের ভেতর পাঠায়, তাই এটি সেফটি হিসেবে দেওয়া হলো
       job = responseData.data?.data || responseData.data;
     } else {
-      errorMessage = "চাকরির বিস্তারিত তথ্য পাওয়া যায়নি!";
+      errorMessage = "চাকরির বিস্তারিত তথ্য পাওয়া যায়নি!";
     }
   } catch (error) {
     errorMessage = "সার্ভারের সাথে কানেক্ট করা যাচ্ছে না।";
   }
 
-  // লারাভেল ডাটাবেসে বিস্তারিত লেখার ফিল্ডের নাম যাই হোক না কেন (description বা details), এটি তা ধরে নেবে।
   const jobDescription = job?.description || job?.details || job?.body || '';
 
-  // সার্কুলারের অন্যান্য ছবিগুলো (যদি থাকে)
   const circularImages = [
     job?.circular_image_1_url || job?.circular_image_1,
     job?.circular_image_2_url || job?.circular_image_2,
     job?.circular_image_3_url || job?.circular_image_3,
     job?.circular_image_4_url || job?.circular_image_4,
-  ].filter(Boolean); // যেগুলোতে ছবি নেই সেগুলো বাদ দিয়ে দেবে
+  ].filter(Boolean); 
 
   return (
     <main className="min-h-screen bg-slate-50">
-      
-      {/* এখানে থেকে <Header /> সরিয়ে দেওয়া হয়েছে কারণ এটি layout.tsx থেকে অটোমেটিক আসবে */}
-      
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         <Link href="/" className="inline-flex items-center gap-2 text-slate-500 font-semibold mb-6 hover:text-orange-600 transition-colors bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
@@ -53,7 +79,7 @@ export default async function JobDetails({ params }: any) {
           job && (
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
               
-              {/* মেইন ছবি (Headline Image) */}
+              {/* মেইন ছবি */}
               {job.headline_image_url && (
                 <div className="w-full h-auto bg-slate-100 relative border-b border-slate-100">
                   <img 
@@ -102,13 +128,13 @@ export default async function JobDetails({ params }: any) {
                     dangerouslySetInnerHTML={{ __html: jobDescription }}
                   />
                 ) : (
-                  <p className="text-slate-500 italic mb-6">বিস্তারিত কোনো লিখিত তথ্য দেওয়া নেই। নিচের সার্কুলার ইমেজগুলো দেখুন।</p>
+                  <p className="text-slate-500 italic mb-6">বিস্তারিত কোনো লিখিত তথ্য দেওয়া নেই। নিচের সার্কুলার ইমেজগুলো দেখুন।</p>
                 )}
 
-                {/* সার্কুলারের অন্যান্য ছবিগুলো (Circular Images) */}
+                {/* সার্কুলারের অন্যান্য ছবিগুলো */}
                 {circularImages.length > 0 && (
                   <div className="mt-10 space-y-6">
-                    <h3 className="text-xl font-bold text-slate-800 border-b pb-2 mb-4">অফিশিয়াল সার্কুলার:</h3>
+                    <h3 className="text-xl font-bold text-slate-800 border-b pb-2 mb-4">অফিশিয়াল সার্কুলার:</h3>
                     {circularImages.map((imgUrl, index) => (
                       <img 
                         key={index}
@@ -129,7 +155,7 @@ export default async function JobDetails({ params }: any) {
                       rel="noopener noreferrer"
                       className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-8 py-4 rounded-xl hover:shadow-lg hover:opacity-90 transition-all text-lg"
                     >
-                      আবেদন করুন / মূল ওয়েবসাইট দেখুন
+                      আবেদন করুন / মূল ওয়েবসাইট দেখুন
                     </a>
                   </div>
                 )}
