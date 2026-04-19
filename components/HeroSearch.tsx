@@ -1,56 +1,39 @@
-// File: components/HeroSearch.tsx
-'use client'; 
-
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-
+// File: src/components/HeroSearch.tsx
 export default function HeroSearch() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  // URL থেকে আগের সার্চ করা শব্দ থাকলে সেটি বক্সে দেখানোর জন্য
-  const defaultSearch = searchParams.get('search') || '';
-  const [searchTerm, setSearchTerm] = useState(defaultSearch);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault(); // পেজ রিলোড হওয়া বন্ধ করবে
-
-    // বর্তমান লিংকের অন্যান্য প্যারামিটার (যেমন category) ঠিক রাখার জন্য
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-
-    if (searchTerm.trim()) {
-      current.set('search', searchTerm.trim());
-    } else {
-      current.delete('search'); // বক্স ফাঁকা থাকলে সার্চ মুছে ফেলবে
-    }
-
-    // নতুন লিংকে পাঠিয়ে দেওয়া
-    const search = current.toString();
-    const query = search ? `?${search}` : '';
-    router.push(`/${query}`);
-  };
-
   return (
-    <section className="bg-gradient-to-b from-blue-50 via-slate-50 to-slate-50 py-16 px-4 border-b border-slate-100 text-center">
-      <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-8">
-        আপনার স্বপ্নের চাকরি খুঁজুন
-      </h1>
-      
-      <form onSubmit={handleSearch} className="max-w-2xl mx-auto bg-white p-2 rounded-full shadow-md border border-slate-200 flex items-center focus-within:ring-2 ring-orange-200 transition-all">
-        <div className="pl-4 text-slate-400">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </div>
-        <input 
-          type="text" 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="কী ধরনের চাকরি খুঁজছেন (যেমন: ব্যাংক, শিক্ষক)..." 
-          className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-slate-700 placeholder-slate-400 w-full"
-        />
-        <button type="submit" className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-sm cursor-pointer">
-          খুঁজুন
-        </button>
-      </form>
+    <section className="relative bg-white border-b border-slate-100 overflow-hidden pt-12 pb-14">
+      {/* হালকা ব্যাকগ্রাউন্ড শেপ (খুবই সূক্ষ্ম) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-slate-50 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+        
+        {/* মেইন হেডিং (সাব-টাইটেল বাদ দিয়ে এটিকেই ফোকাস করা হয়েছে) */}
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-8">
+          আপনার স্বপ্নের <span className="text-orange-600">চাকরি</span> খুঁজুন
+        </h1>
+        
+        {/* সার্চ ফর্ম (আরও স্লিম ও স্মার্ট করা হয়েছে) */}
+        <form action="/" method="GET" className="bg-white p-1.5 border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row max-w-2xl mx-auto gap-2">
+          <div className="flex-grow flex items-center pl-4">
+            <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="পদের নাম বা কোম্পানি লিখুন..."
+              className="w-full py-2.5 px-3 text-slate-800 bg-transparent border-none focus:ring-0 text-base outline-none placeholder-slate-400"
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 px-6 rounded-lg transition-colors text-base sm:w-auto w-full flex-shrink-0"
+          >
+            সার্চ
+          </button>
+        </form>
+
+      </div>
     </section>
   );
 }

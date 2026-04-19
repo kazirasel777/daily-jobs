@@ -1,64 +1,86 @@
-// File: components/CategorySidebar.tsx
-'use client'; 
+// File: src/components/CategorySidebar.tsx
+import Link from 'next/link';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
 
-type CategoryProps = {
-  categories: any[];
+interface CategorySidebarProps {
+  categories: Category[];
   currentCategory: string;
-};
+}
 
-export default function CategorySidebar({ categories, currentCategory }: CategoryProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const handleCategoryClick = (value: string) => {
-    // বর্তমান সার্চ প্যারামিটার ঠিক রেখে শুধু ক্যাটাগরি আপডেট করা
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-    current.set('category', value);
-    router.push(`/?${current.toString()}`);
-  };
-
+export default function CategorySidebar({ categories, currentCategory }: CategorySidebarProps) {
   return (
-    <aside className="w-full lg:w-72 bg-white p-5 rounded-2xl shadow-sm border border-slate-100 lg:sticky lg:top-24">
-      <h3 className="font-bold text-slate-800 text-lg mb-4 pb-3 border-b border-slate-100">
-        ক্যাটাগরি সমূহ
-      </h3>
-      <div className="flex flex-col gap-2">
-        <button 
-          onClick={() => handleCategoryClick('all')}
-          className={`text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
-            currentCategory === 'all' 
-              ? 'bg-orange-50 text-orange-700 border border-orange-200' 
-              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
-          }`}
-        >
-          অল চাকরি
-        </button>
+    <aside className="w-full lg:w-72 flex-shrink-0">
+      <div className="bg-white rounded-2xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] sticky top-24 border border-slate-100">
+        
+        {/* সাইডবার হেডার */}
+        <h3 className="font-bold text-slate-800 text-lg mb-5 flex items-center gap-3">
+          <span className="bg-orange-50 text-orange-600 p-2 rounded-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+          </span>
+          ক্যাটাগরি
+        </h3>
 
-        {categories.map((cat) => {
-          const categoryValue = cat.value || cat.id.toString(); 
-          const isActive = currentCategory === categoryValue;
+        {/* ক্যাটাগরি লিস্ট */}
+        <div className="flex flex-col gap-1.5 max-h-[calc(100vh-220px)] overflow-y-auto pr-2 custom-scrollbar">
           
-          return (
-            <button 
+          {/* 'সকল চাকরি' বাটন */}
+          <Link
+            href="/"
+            className={`group relative flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all duration-200 overflow-hidden ${
+              currentCategory === 'all'
+                ? 'bg-orange-50/80 text-orange-700 font-semibold'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
+            }`}
+          >
+            {/* অ্যাক্টিভ ইন্ডিকেটর (বাম পাশের চিকন দাগ) */}
+            {currentCategory === 'all' && (
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-r-md"></div>
+            )}
+            
+            <span className="flex items-center gap-3 relative z-10">
+              সকল চাকরি
+            </span>
+            <span className={`text-xs font-semibold px-2 py-1 rounded-md transition-colors relative z-10 ${
+              currentCategory === 'all' ? 'bg-orange-100/50 text-orange-700' : 'bg-slate-100 text-slate-500 group-hover:bg-white'
+            }`}>
+              All
+            </span>
+          </Link>
+
+          {/* ডাইনামিক ক্যাটাগরি লিস্ট */}
+          {categories.map((cat) => (
+            <Link
               key={cat.id}
-              onClick={() => handleCategoryClick(categoryValue)}
-              className={`text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors flex justify-between items-center ${
-                isActive 
-                  ? 'bg-orange-50 text-orange-700 border border-orange-200' 
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
+              href={`/?category=${cat.slug}`}
+              className={`group relative flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all duration-200 overflow-hidden ${
+                currentCategory === cat.slug
+                  ? 'bg-orange-50/80 text-orange-700 font-semibold'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
               }`}
             >
-              <span>{cat.name}</span>
-              {cat.jobs_count !== undefined && (
-                <span className={`text-[11px] px-2 py-0.5 rounded-full ${isActive ? 'bg-orange-200 text-orange-800' : 'bg-slate-200 text-slate-500'}`}>
-                  {cat.jobs_count}
-                </span>
+              {/* অ্যাক্টিভ ইন্ডিকেটর (বাম পাশের চিকন দাগ) */}
+              {currentCategory === cat.slug && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-r-md"></div>
               )}
-            </button>
-          )
-        })}
+
+              <span className="flex items-center gap-3 relative z-10">
+                {cat.name}
+              </span>
+              <svg className={`w-4 h-4 transition-transform duration-200 relative z-10 ${
+                currentCategory === cat.slug ? 'text-orange-600 translate-x-1' : 'text-slate-400 group-hover:text-orange-500 group-hover:translate-x-1'
+              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ))}
+        </div>
       </div>
     </aside>
   );
