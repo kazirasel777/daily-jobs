@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from '@/components/Header';
 import { GoogleAnalytics } from '@next/third-parties/google'; // ✅ অ্যানালিটিক্স প্যাকেজ
+import Footer from '@/components/Footer';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,7 +48,7 @@ export default function RootLayout({
         
         {/* ✅ আপনার Google Analytics ID এখানে বসান */}
         <GoogleAnalytics gaId="G-1PR46X7764" />
-        
+        <Footer />
       </body>
     </html>
   );
