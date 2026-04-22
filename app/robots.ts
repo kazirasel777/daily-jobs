@@ -1,4 +1,3 @@
-// File: app/robots.ts
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
@@ -7,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://dailyjobs.bd/sitemap.xml', // আপনার ডোমেইনের নাম
+    sitemap: 'https://www.dailyjobs.bd/sitemap.xml', // www যুক্ত করা হয়েছে
   };
 }
