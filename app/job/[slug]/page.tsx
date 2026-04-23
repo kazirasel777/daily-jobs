@@ -3,24 +3,25 @@ import Link from 'next/link';
 import ViewCounter from '@/components/ViewCounter';
 import Image from 'next/image';
 
-// ✅ ক্যাটাগরি অনুযায়ী ছবি সিলেক্ট করার ফাংশন (JobCard এর মতোই)
+// ✅ স্মার্ট ক্যাটাগরি ম্যাচিং ফাংশন
 const getHeadlineImage = (job: any) => {
-  // ১. যদি অরিজিনাল হেডলাইন ইমেজ বা লোগো থাকে, তবে সেটিই দেখাবে
+  // ১. অরিজিনাল ছবি থাকলে সেটিই দেখাবে
   if (job.headline_image_url && job.headline_image_url.length > 5) return job.headline_image_url;
   if (job.logo_url && job.logo_url.length > 5) return job.logo_url;
 
-  // ২. ক্যাটাগরির ভ্যালু বের করা (যদি থাকে)
-  const categoryValue = job.categories?.[0]?.value?.toLowerCase() || '';
+  // ২. ক্যাটাগরির নাম এবং ভ্যালু একসাথে করে চেক করা
+  const catName = (job.categories?.[0]?.name || '').toLowerCase();
+  const catValue = (job.categories?.[0]?.value || '').toLowerCase();
+  const catString = `${catName} ${catValue}`;
 
-  // ৩. ক্যাটাগরি অনুযায়ী ডিফল্ট ইমেজ সেট করা
-  if (categoryValue === 'govt' || categoryValue === 'government') {
+  // ৩. স্মার্ট কিওয়ার্ড ম্যাচিং
+  if (catString.includes('govt') || catString.includes('government') || catString.includes('সরকার')) {
     return '/images/govt-default.png';
-  } else if (categoryValue === 'private') {
+  } else if (catString.includes('private') || catString.includes('company') || catString.includes('ngo') || catString.includes('বেসরকারি') || catString.includes('প্রাইভেট') || catString.includes('এনজিও')) {
     return '/images/private-default.png';
-  } else if (categoryValue === 'bank') {
-    return '/images/bank-default.jpg';
+  } else if (catString.includes('bank') || catString.includes('ব্যাংক')) {
+    return '/images/bank-default.png'; // 🔴 এখানে .png করা হলো
   } else {
-    // ৪. যদি কোনোটিই না মেলে বা ফাঁকা থাকে
     return '/images/all-default.png';
   }
 };

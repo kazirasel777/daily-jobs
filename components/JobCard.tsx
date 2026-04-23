@@ -23,24 +23,33 @@ interface Job {
   categories?: Category[]; // ক্যাটাগরি ধরার জন্য
 }
 
-// ✅ ক্যাটাগরি অনুযায়ী ছবি সিলেক্ট করার ফাংশন
+// ✅ সুপারচার্জড স্মার্ট ম্যাচিং ফাংশন (টাইটেল, কোম্পানি ও ক্যাটাগরি চেক করবে)
 const getThumbnailImage = (job: Job) => {
-  // ১. যদি অরিজিনাল লোগো বা হেডলাইন ইমেজ থাকে, তবে সেটিই দেখাবে
   if (job.logo_url && job.logo_url.length > 5) return job.logo_url;
   if (job.headline_image_url && job.headline_image_url.length > 5) return job.headline_image_url;
 
-  // ২. ক্যাটাগরির ভ্যালু বের করা (যদি থাকে)
-  const categoryValue = job.categories?.[0]?.value?.toLowerCase() || '';
+  // সব ইনফরমেশন একসাথে করে একটি বড় টেক্সট বানানো
+  const catName = (job.categories?.[0]?.name || '').toLowerCase();
+  const catValue = (job.categories?.[0]?.value || '').toLowerCase();
+  const title = (job.title || '').toLowerCase();
+  const company = (job.company_name || '').toLowerCase();
+  
+  const searchString = `${catName} ${catValue} ${title} ${company}`;
 
-  // ৩. ক্যাটাগরি অনুযায়ী ডিফল্ট ইমেজ সেট করা
-  if (categoryValue === 'govt' || categoryValue === 'government') {
+  // ১. সরকারি চাকরির কিওয়ার্ড
+  if (searchString.includes('govt') || searchString.includes('government') || searchString.includes('সরকার') || searchString.includes('মন্ত্রণালয়') || searchString.includes('অধিদপ্তর') || searchString.includes('পরিদপ্তর') || searchString.includes('কর্তৃপক্ষ') || searchString.includes('বাহিনী') || searchString.includes('কমিশন')) {
     return '/images/govt-default.png';
-  } else if (categoryValue === 'private') {
+  } 
+  // ২. ব্যাংক জবের কিওয়ার্ড
+  else if (searchString.includes('bank') || searchString.includes('ব্যাংক')) {
+    return '/images/bank-default.png';
+  } 
+  // ৩. বেসরকারি/প্রাইভেট/এনজিও জবের কিওয়ার্ড
+  else if (searchString.includes('private') || searchString.includes('company') || searchString.includes('ngo') || searchString.includes('বেসরকারি') || searchString.includes('প্রাইভেট') || searchString.includes('এনজিও') || searchString.includes('গ্রুপ') || searchString.includes('group') || searchString.includes('ফাউন্ডেশন') || searchString.includes('foundation') || searchString.includes('লিমিটেড') || searchString.includes('ltd') || searchString.includes('limited') || searchString.includes('ইউনিভার্সিটি') || searchString.includes('বিশ্ববিদ্যালয়') || searchString.includes('হাসপাতাল') || searchString.includes('hospital')) {
     return '/images/private-default.png';
-  } else if (categoryValue === 'bank') {
-    return '/images/bank-default.jpg';
-  } else {
-    // ৪. যদি কোনোটিই না মেলে বা ফাঁকা থাকে
+  } 
+  // ৪. কোনো কিছুই না মিললে
+  else {
     return '/images/all-default.png';
   }
 };
