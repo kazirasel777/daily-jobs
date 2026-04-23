@@ -7,12 +7,15 @@ export default function ViewCounter({ jobId }: { jobId: number | string }) {
   useEffect(() => {
     if (!jobId) return;
     
-    // API কে বলে দেওয়া হচ্ছে যে এটি একটি 'web' ভিউ
-    fetch(`https://admin.jobsboxbd.com/api/v1/jobs/${jobId}/view?type=web`, { 
-      method: 'POST' 
+    // 🔴 লিংকে /view এর বদলে সঠিক রাউট /update-view-count বসানো হলো
+    fetch(`https://admin.jobsboxbd.com/api/v1/jobs/${jobId}/update-view-count?type=web`, { 
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      }
     }).catch((err) => console.error("View count error:", err));
     
   }, [jobId]);
 
-  return null; // এটি স্ক্রিনে কিছু দেখাবে না, শুধু ব্যাকগ্রাউন্ডে কাজ করবে
+  return null;
 }
