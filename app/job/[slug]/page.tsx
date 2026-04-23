@@ -1,6 +1,29 @@
 // File: app/job/[slug]/page.tsx
 import Link from 'next/link';
-import ViewCounter from '@/components/ViewCounter'; // 🔴 ViewCounter ইমপোর্ট করা হলো
+import ViewCounter from '@/components/ViewCounter';
+import Image from 'next/image';
+
+// ✅ ক্যাটাগরি অনুযায়ী ছবি সিলেক্ট করার ফাংশন (JobCard এর মতোই)
+const getHeadlineImage = (job: any) => {
+  // ১. যদি অরিজিনাল হেডলাইন ইমেজ বা লোগো থাকে, তবে সেটিই দেখাবে
+  if (job.headline_image_url && job.headline_image_url.length > 5) return job.headline_image_url;
+  if (job.logo_url && job.logo_url.length > 5) return job.logo_url;
+
+  // ২. ক্যাটাগরির ভ্যালু বের করা (যদি থাকে)
+  const categoryValue = job.categories?.[0]?.value?.toLowerCase() || '';
+
+  // ৩. ক্যাটাগরি অনুযায়ী ডিফল্ট ইমেজ সেট করা
+  if (categoryValue === 'govt' || categoryValue === 'government') {
+    return '/images/govt-default.png';
+  } else if (categoryValue === 'private') {
+    return '/images/private-default.png';
+  } else if (categoryValue === 'bank') {
+    return '/images/bank-default.jpg';
+  } else {
+    // ৪. যদি কোনোটিই না মেলে বা ফাঁকা থাকে
+    return '/images/all-default.png';
+  }
+};
 
 // ✅ ডায়নামিক SEO মেটা ট্যাগ জেনারেট করার ফাংশন
 export async function generateMetadata({ params }: any) {
@@ -16,6 +39,9 @@ export async function generateMetadata({ params }: any) {
     const plainTextDescription = (job.description || job.details || job.body || '')
       .replace(/<[^>]+>/g, '')
       .substring(0, 160) + '...';
+      
+    // SEO এর জন্যও ডিফল্ট ইমেজ লজিক ব্যবহার করা
+    const ogImage = getHeadlineImage(job);
 
     return {
       title: `${job.title} | দৈনিক চাকরি`,
@@ -23,7 +49,7 @@ export async function generateMetadata({ params }: any) {
       openGraph: {
         title: job.title,
         description: plainTextDescription,
-        images: job.headline_image_url ? [job.headline_image_url] : [],
+        images: [ogImage],
         type: 'article',
       },
     };
@@ -61,10 +87,13 @@ export default async function JobDetails({ params }: any) {
     job?.circular_image_3_url || job?.circular_image_3,
     job?.circular_image_4_url || job?.circular_image_4,
   ].filter(Boolean); 
+  
+  // 🔴 নতুন ফাংশন থেকে ডিসপ্লে করার জন্য ছবি নেওয়া
+  const displayImage = job ? getHeadlineImage(job) : '';
+  const isDefaultImage = displayImage.startsWith('/images/');
 
   return (
     <main className="min-h-screen bg-slate-50/80 py-8">
-      {/* 🔴 ভুলটি এখানেই ছিল: আগের কোডে এই div-টি নিচে section হিসেবে ক্লোজ করা হয়েছিল */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* ব্যাক বাটন */}
@@ -80,7 +109,6 @@ export default async function JobDetails({ params }: any) {
         ) : (
           job && (
             <>
-              {/* 🔴 নতুন ভিউ কাউন্টার কল করা হলো */}
               <ViewCounter jobId={job.id} />
 
               <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
@@ -88,16 +116,18 @@ export default async function JobDetails({ params }: any) {
                 {/* মেইন কন্টেন্ট (বাম পাশ) */}
                 <div className="flex-grow lg:w-2/3 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                   
-                  {/* হেডলাইন ইমেজ */}
-                  {job.headline_image_url && (
-                    <div className="w-full bg-slate-50 border-b border-slate-100 p-4 sm:p-6 flex justify-center">
-                      <img 
-                        src={job.headline_image_url} 
+                  {/* 🔴 আপডেট করা হেডলাইন ইমেজ সেকশন */}
+                  <div className={`w-full bg-slate-50 border-b border-slate-100 flex justify-center ${isDefaultImage ? '' : 'p-4 sm:p-6'}`}>
+                    <div className={`relative w-full ${isDefaultImage ? 'aspect-video' : 'h-[250px] sm:h-[300px]'}`}>
+                      <Image 
+                        src={displayImage} 
                         alt={job.title} 
-                        className="max-h-[300px] w-auto object-contain rounded-xl shadow-sm"
+                        fill
+                        className={`rounded-t-3xl ${isDefaultImage ? 'object-cover' : 'object-contain rounded-xl shadow-sm'}`}
+                        priority
                       />
                     </div>
-                  )}
+                  </div>
 
                   <div className="p-6 sm:p-8 md:p-10">
                     {/* ক্যাটাগরি */}
@@ -122,7 +152,6 @@ export default async function JobDetails({ params }: any) {
                       </span>
                       <span className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                         <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        {/* 🔴 এখানে শুধু ওয়েব ভিউ দেখানো হলো */}
                         ভিউ: {job.web_views_count || 0}
                       </span>
                     </div>
@@ -213,7 +242,7 @@ export default async function JobDetails({ params }: any) {
             </>
           )
         )}
-      </div> {/* ✅ সঠিকভাবে div ক্লোজ করা হলো */}
+      </div>
     </main>
   );
 }
